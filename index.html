@@ -1,1 +1,246 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SafeTrip Health Form — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--accent:#1f7a8c;--muted:#6b7280}
+body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;padding:20px;color:#111}
+.wrap{max-width:980px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px}
+h1{margin:0;font-size:20px}
+p.subtitle{margin:4px 0 18px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+.card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+label{display:block;font-size:13px;margin-bottom:6px;color:#222}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text], select{padding:8px;border-radius:8px;border:1px solid #e5e7eb;width:100%}
+.checkbox-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fafafa;font-size:13px;cursor:pointer}
+button{background:var(--accent);color:white;padding:10px 12px;border-radius:10px;border:0;cursor:pointer}
+.result{padding:12px;border-radius:8px;margin-top:10px}
+.ok{background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0}
+.warn{background:#fff7ed;color:#92400e;border:1px solid #ffe8c2}
+.product-list{max-height:300px;overflow:auto;margin-top:8px}
+footer{margin-top:18px;color:var(--muted);font-size:13px}
+.search-box{margin-bottom:10px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.card{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#1f7a8c,#3fb0c1);display:flex;align-items:center;justify-content:center;color:white;font-weight:700">ST</div>
+  <div>
+    <h1>SafeTrip Health Form — Demo</h1>
+    <p class="subtitle">Kullanıcı profili doldur, dil seç, ürün (QR) taratınca kişiye özel uyarı al. (Demo, lokal)</p>
+  </div>
+</header>
+
+<div class="grid" style="margin-top:18px">
+  <div>
+    <!-- Kullanıcı Profili -->
+    <div class="card" id="profileCard">
+      <h3>Kullanıcı Profili</h3>
+      <div style="margin-top:8px">
+        <label>Yaş aralığı</label>
+        <select id="age">
+          <option>10–14</option>
+          <option>15–18</option>
+          <option>19+</option>
+        </select>
+      </div>
+      <div style="margin-top:8px">
+        <label>Cinsiyet</label>
+        <select id="gender"><option>Kadın</option><option>Erkek</option><option>Diğer</option></select>
+      </div>
+      <div style="margin-top:8px">
+        <label>Dil / Language</label>
+        <select id="lang"><option value="tr">Türkçe</option><option value="en">English</option></select>
+      </div>
+      <div style="margin-top:10px">
+        <label>Alerjiler / Allergies (Çoklu seçim)</label>
+        <div class="checkbox-row" id="allergyChips">
+          <label class="chip" title="Buğday ve türevi ürünlerde bulunur"><input type="checkbox" value="gluten"> Gluten</label>
+          <label class="chip" title="Fındık/fıstık gibi sert kabuklu yemişler"><input type="checkbox" value="nuts"> Kuruyemiş</label>
+          <label class="chip" title="Süt ve süt ürünleri"><input type="checkbox" value="milk"> Süt</label>
+          <label class="chip" title="Yumurta ürünleri"><input type="checkbox" value="egg"> Yumurta</label>
+          <label class="chip" title="Soya ve türevleri"><input type="checkbox" value="soy"> Soya</label>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label>Gıda okuryazarlığı (Etiket okuma sıklığı)</label>
+        <select id="foodLit">
+          <option>Her zaman</option>
+          <option>Bazen</option>
+          <option>Nadiren</option>
+          <option>Hiç</option>
+        </select>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+        <button id="saveProfile">Profili Kaydet</button>
+        <button id="clearProfile" style="background:#e5e7eb;color:#111">Temizle</button>
+      </div>
+      <p style="margin-top:8px;color:var(--muted);font-size:13px">Kaydettiğiniz profil cihazınızda saklanır (local). Bu demo çevrimdışı çalışır.</p>
+    </div>
+
+    <!-- Ürünler Listesi + Arama -->
+    <div class="card" style="margin-top:12px">
+      <h3>Ürünler (10 örnek)</h3>
+      <input type="text" id="searchInput" placeholder="Ürün ara..." class="search-box">
+      <div class="product-list" id="products"></div>
+      <p style="margin-top:8px;color:var(--muted);font-size:13px">Her ürünün etiketi örnek olarak belirlenmiştir. Gerçek kullanımda bu bilgiler sunucuda tutulur.</p>
+    </div>
+  </div>
+
+  <div>
+    <!-- QR Taraması / Ürün Kontrolü -->
+    <div class="card">
+      <h3>QR Taraması / Ürün Kontrolü</h3>
+      <label>Simüle ürün (QR):</label>
+      <select id="scanProduct"></select>
+      <div style="margin-top:10px">
+        <label>Çıktı dili / Output language</label>
+        <select id="outLang"><option value="tr">Türkçe</option><option value="en">English</option></select>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="scanBtn">QR Tarat</button>
+        <button id="speakBtn" style="background:#6b7280">Sesli Tekrar</button>
+        <button id="goProduct" style="background:#3fb0c1">Ürün Sayfasına Git</button>
+      </div>
+      <div id="resultBox" class="result" aria-live="polite" style="display:none"></div>
+      <div style="margin-top:12px">
+        <label>Hızlı notlar</label>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px">
+          - Kişi profilini kaydet → ürün tarat → sistem uygunluk uyarısı verir.<br>
+          - Sesli uyarı cihazın tarayıcı TTS özelliğiyle okunur.
+        </div>
+      </div>
+    </div>
+
+    <!-- Test / Geri Bildirim -->
+    <div class="card" style="margin-top:12px">
+      <h3>Test / Geri Bildirim</h3>
+      <label>Genel memnuniyet</label>
+      <div class="row" style="margin-top:6px">
+        <button onclick="alert('Teşekkürler!')">Gönder</button>
+      </div>
+      <footer>Bu demo, projenin ilk aşaması olan "form ve kişiselleştirilmiş uyarı" mekanizmasını gösterir. Geliştirmeye açıktır.</footer>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="product.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+const prodListEl=document.getElementById('products');
+const scanSelect=document.getElementById('scanProduct');
+const searchInput=document.getElementById('searchInput');
+
+function renderProducts(filter=''){
+  prodListEl.innerHTML='';
+  scanSelect.innerHTML='';
+  PRODUCTS.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(p=>{
+      const d=document.createElement('div');
+      d.style.padding='8px';d.style.borderBottom='1px solid #f3f4f6';
+      let allergText = p.allergens.length ? ('Alerjen: '+p.allergens.join(', ')):'Alerjen yok';
+      let color = p.allergens.length ? '#92400e':'#065f46';
+      d.innerHTML=`<strong>${p.name}</strong><div style="font-size:13px;color:${color}" title="${p.allergens.map(a=>a).join(', ')}">${allergText}</div>`;
+      prodListEl.appendChild(d);
+      const opt=document.createElement('option');opt.value=p.id;opt.textContent=p.name;scanSelect.appendChild(opt);
+    });
+}
+renderProducts();
+
+searchInput.addEventListener('input',(e)=>{renderProducts(e.target.value)});
+
+// Save/load profile
+const saveBtn=document.getElementById('saveProfile');
+const clearBtn=document.getElementById('clearProfile');
+const ageEl=document.getElementById('age');
+const genderEl=document.getElementById('gender');
+const langEl=document.getElementById('lang');
+const foodLitEl=document.getElementById('foodLit');
+const allergyInputs=document.querySelectorAll('#allergyChips input[type=checkbox>');
+
+function getProfile(){
+  const allergies=[];
+  allergyInputs.forEach(i=>{if(i.checked)allergies.push(i.value)});
+  return {age:ageEl.value,gender:genderEl.value,lang:langEl.value,foodLit:foodLitEl.value,allergies};
+}
+function setProfile(p){
+  if(!p) return;
+  ageEl.value=p.age||ageEl.value;
+  genderEl.value=p.gender||genderEl.value;
+  langEl.value=p.lang||langEl.value;
+  foodLitEl.value=p.foodLit||foodLitEl.value;
+  allergyInputs.forEach(i=>i.checked = (p.allergies||[]).includes(i.value));
+}
+try{const saved=JSON.parse(localStorage.getItem('st_profile')||'null');if(saved) setProfile(saved);}catch(e){}
+
+saveBtn.addEventListener('click',()=>{
+  const p=getProfile();localStorage.setItem('st_profile',JSON.stringify(p));alert('Profil kaydedildi!');
+});
+clearBtn.addEventListener('click',()=>{
+  localStorage.removeItem('st_profile');allergyInputs.forEach(i=>i.checked=false);
+  ageEl.selectedIndex=0;genderEl.selectedIndex=0;langEl.selectedIndex=0;foodLitEl.selectedIndex=0;
+  alert('Profil temizlendi');
+});
+
+// scan logic
+const scanBtn=document.getElementById('scanBtn');
+const resultBox=document.getElementById('resultBox');
+const outLang=document.getElementById('outLang');
+const speakBtn=document.getElementById('speakBtn');
+const goProduct=document.getElementById('goProduct');
+
+function buildMessage(isSafe,matchedAllergens,productName,lang){
+  if(lang==='en'){
+    if(isSafe) return `${productName} is suitable for you.`;
+    return `Warning! ${productName} contains ${matchedAllergens.join(', ')}. Do not consume.`;
+  } else {
+    if(isSafe) return `${productName} sizin için uygun.`;
+    return `Dikkat! ${productName} içinde ${matchedAllergens.join(', ')} bulunmaktadır. Tüketmeyiniz.`;
+  }
+}
+
+function speakText(text,lang){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const utter=new SpeechSynthesisUtterance(text);
+  utter.lang = (lang==='en') ? 'en-US' : 'tr-TR';
+  speechSynthesis.speak(utter);
+}
+
+scanBtn.addEventListener('click',()=>{
+  const profile=getProfile();
+  const pid=Number(scanSelect.value);
+  const product=PRODUCTS.find(p=>p.id===pid);
+  const matched=product.allergens.filter(a=>profile.allergies.includes(a));
+  const isSafe = matched.length===0;
+  const lang = outLang.value || profile.lang || 'tr';
+  const msg = buildMessage(isSafe, matched, product.name, lang);
+  resultBox.style.display='block';
+  resultBox.className='result '+(isSafe?'ok':'warn');
+  resultBox.textContent = msg;
+  speakText(msg,lang);
+});
+
+speakBtn.addEventListener('click',()=>{
+  if(resultBox.style.display==='none') return alert('Önce tarama yapın');
+  const lang = outLang.value; speakText(resultBox.textContent, lang);
+});
+
+// Ürün sayfasına yönlendirme
+goProduct.addEventListener('click',()=>{
+  const pid=Number(scanSelect.value);
+  window.location.href=`products.html?id=${pid}&lang=${outLang.value}`;
+});
+</script>
+</body>
+</html>
 
