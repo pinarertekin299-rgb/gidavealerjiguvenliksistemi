@@ -1,1 +1,76 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ürün Detayı</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--accent:#1f7a8c;--muted:#6b7280}
+body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;padding:20px;color:#111}
+.wrap{max-width:600px;margin:0 auto}
+.card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-top:20px}
+h1,h2,h3{margin:0 0 8px 0}
+label{font-weight:600;color:#222;font-size:14px}
+.product-img{max-width:100%;border-radius:12px;margin-bottom:10px}
+ul{padding-left:18px;margin:4px 0 12px 0}
+button{background:var(--accent);color:white;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;margin-top:10px}
+.qr-container{text-align:center;margin-top:12px}
+@media(max-width:600px){.wrap{padding:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card" id="productCard">
+  <h1 id="productName">Ürün Adı</h1>
+  <img src="" id="productImg" class="product-img" alt="Ürün Resmi">
+  <div><label>Alerjenler:</label> <span id="productAllergens"></span></div>
+  <div style="margin-top:8px"><label>İçindekiler:</label>
+    <p id="productIngredients" style="margin:4px 0 0 0;font-size:14px"></p>
+  </div>
+  <div style="margin-top:8px"><label>Besin Değerleri:</label>
+    <ul id="productNutrition"></ul>
+  </div>
+  <div class="qr-container">
+    <label>Ürün QR Kodu:</label>
+    <canvas id="qrcode"></canvas>
+  </div>
+  <button onclick="window.history.back()">Geri Dön</button>
+</div>
+</div>
+
+<script src="product.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+// URL parametrelerini al
+function getParams(){
+  const params=new URLSearchParams(window.location.search);
+  return {id:params.get('id'),lang:params.get('lang')||'tr'};
+}
+const {id,lang}=getParams();
+const pid=Number(id);
+const product=PRODUCTS.find(p=>p.id===pid) || PRODUCTS[0];
+
+// Bilgileri DOM’a yerleştir
+document.getElementById('productName').textContent = product.name;
+document.getElementById('productImg').src = product.img || '';
+document.getElementById('productImg').alt = product.name;
+document.getElementById('productAllergens').textContent = product.allergens.length ? product.allergens.join(', ') : (lang==='en'?'No allergens':'Alerjen yok');
+document.getElementById('productIngredients').textContent = product.ingredients;
+const nutEl=document.getElementById('productNutrition');
+nutEl.innerHTML='';
+for(const key in product.nutrition){
+  const li=document.createElement('li');
+  li.textContent = `${key.charAt(0).toUpperCase()+key.slice(1)}: ${product.nutrition[key]}`;
+  nutEl.appendChild(li);
+}
+
+// QR Kod oluştur
+const qrCanvas=document.getElementById('qrcode');
+QRCode.toCanvas(qrCanvas, window.location.href, {width:150}, function (error) {
+  if(error) console.error(error);
+});
+</script>
+</body>
+</html>
 
